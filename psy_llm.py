@@ -15,7 +15,7 @@ from client import LlamaClient
 
 def save_questionnaire_file(conversation_info: dict,turn_num: int, question_type: str, noun: str, sensory: str,
                             file_dir:str = "./answers/",):
-    save_json_file_name = file_dir + f"questionnaire_turn_num_{turn_num}_question_type_{question_type}_noun_{noun}_sensory_{sensory}.json" # {questionnaire_lang}_request_{request_lang}
+    save_json_file_name = file_dir + f"turn_num_{turn_num}_question_type_{question_type}_noun_{noun}_sensory_{sensory}_questionnaire.json" # {questionnaire_lang}_request_{request_lang}
     with open(save_json_file_name, "w", encoding='utf-8') as file:
         json.dump(conversation_info, file, ensure_ascii=False, indent=4)  # 使用 indent=4 使文件格式更美观
     print(f"saved to file {save_json_file_name}")
