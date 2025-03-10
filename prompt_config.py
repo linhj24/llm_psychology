@@ -8,31 +8,26 @@ import re
 import argparse
 import sys
 import os
-
-sys.path.append(".")
-from question_config import QuestionConfig,QuestionInfoManager
-from client import LlamaClient
+from translate import Translator
 
 class PromptConfig:
-    def __init__(self,gender: str, country: str, age: str, lang: str = "English"):
-        self.lang = lang # Chinese,English,Japanese
+    def __init__(self,gender: str, country: str, age: str, lang: str = "en"):
+        self.lang = lang # en,ze
         self.gender = gender # woman,man
         self.country = country # China, American, Japan
         self.age = age
 
-    def generate_prompt(self,llama_client:LlamaClient) -> str:
+    def generate_prompt(self) -> str:
         prompt_sentence = f"You are a {self.gender} from {self.country}, aged {self.age}."
-        if self.lang == 'English':
+        if self.lang == 'en':
+            
             return prompt_sentence
         else:
-            completion = llama_client.create_chat_completion(
-                messages=[
-                         # Todo: prompt
-                        {
-                            "role": "user",
-                            "content": f"please transfer to {self.lang}:{prompt_sentence}"
-                        }
-                    ],
-                max_tokens=128, temperature=0
-            )
-            return completion["choices"][0]["message"]["content"]
+            translator = Translator(from_lang="en", to_lang=self.lang)
+            prompt_sentence_translation = translator.translate(prompt_sentence_translation)
+            print(prompt_sentence_translation)
+            return prompt_sentence_translation
+            
+
+
+    

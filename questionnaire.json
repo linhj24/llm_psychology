@@ -1,0 +1,16 @@
+{
+    "prompt_config":{
+        "gender":"woman",
+        "country":"chinese",
+        "age":"22",
+        "lang":"zh"
+    },
+    "question_config_list":[
+        {"question_type": "create", 
+        "noun": "direction",
+        "sensory": "color"},
+        {"question_type": "create", 
+        "noun": "number",
+        "sensory": "color"}
+    ]
+}

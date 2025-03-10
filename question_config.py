@@ -1,5 +1,19 @@
 import json
 from typing import Dict, List, Any
+import copy
+import json
+import numpy as np
+import time
+import pickle
+from tqdm import tqdm
+import re
+import argparse
+import sys
+import os
+from translate import Translator
+sys.path.append(".")
+from client import LlamaClient
+
 
 class QuestionInfoManager:
     """管理数据字典的类，支持文件读写"""
@@ -33,14 +47,21 @@ class QuestionInfoManager:
 
     def _initialize_default_data(self):
         """初始化默认数据"""
-        self.noun_dict = {"方向": ["东", "西", "南", "北"]}
-        self.sensory_dict = {"颜色": ["红", "橙", "黄", "绿", "青", "蓝", "紫", "黑", "白"]}
+        self.noun_dict = {
+            "direction": ["East", "West", "South", "North", "Northeast", "Northwest", "Southeast", "Southwest"],
+            "number":["0","1","2","3","4","5","6","7","8","9"]
+            }
+        self.sensory_dict = {"color": ["Red", "Orange", "Yellow", "Green", "Cyan", "Blue", "Purple", "Black", "White"]}
         self.helpful_info = {
-            'question': '请给出括号中词语相对应的',
-            'choices': ["\n你可以在以下", "选择你认为合适的：【", "】,如果你认为都不合适，可以写你认为合适的"],
-            'intro': '\n请从 1 - 7 中选择一个数字，表示您的自信程度。\n如果您有明确的理由，请再加以说明。',
-            'confidence': '1代表完全没有自信\n2代表较低自信\n3代表中等偏低自信\n4代表不好说，难以界定\n5代表中等偏高自信\n6代表较高自信\n7代表非常有自信',
-            'format': ['\n请将你选择的', '和自信程度用括号括起来。例如【', '，分数】。']
+            'question': 'Please provide the corresponding words in parentheses',
+            'choices': [ "\nYou can choose from the following",
+                        "select the one you believe is appropriate: 【",
+                        "】, if you think none are suitable, you can write the one you believe is appropriate"],
+            'intro': '\nPlease select a number from 1 to 7 to indicate your level of confidence.\nIf you have a clear reason, please elaborate.',
+            'confidence':'1 represents no confidence at all\n2 represents low confidence\n3 represents moderately low confidence\n4 represents uncertainty, difficult to define\n5 represents moderately high confidence\n6 represents high confidence\n7 represents very confident',
+            'format': ['\nPlease include your choice',
+                        'and your confidence level in parentheses. Responses must strictly follow the format 【',
+                        ', confidence level】.']
         }
 
     def save_data(self):
@@ -75,7 +96,7 @@ class QuestionConfig:
     """
     A class to configure synesthesia-related questions for a large language model.
     """
-    def __init__(self, question_type: str,question_info_manager: QuestionInfoManager, noun: str,sensory: str):
+    def __init__(self, question_type: str,question_info_manager: QuestionInfoManager, noun: str,sensory: str,lang:str = "en"):
         """
         Initialize the QuestionConfig instance.
         
@@ -87,19 +108,22 @@ class QuestionConfig:
         self.question_info_manager = question_info_manager
         self.noun = noun
         self.sensory = sensory
+        self.lang = lang
         
     
     def generate_question(self):
         if self.question_type == "judge":
-            question_list = []
-            question_prefix = "你认为" + self.noun
-            question_connection = "对应" + self.sensory
-            question_suffix = "吗?只回答是或不是"
-            for noun_content in self.question_info_manager.noun_dict[self.noun]:
-                for sensory_content in self.question_info_manager.sensory_dict[self.sensory]:
-                    question = question_prefix + noun_content + question_connection + sensory_content + question_suffix
-                    question_list.append(question)    
-            return question_list
+            pass
+            # question_list = []
+            # question_prefix = "你认为" + self.noun
+            # question_connection = "对应" + self.sensory
+            # question_suffix = "吗?只回答是或不是"
+            # for noun_content in self.question_info_manager.noun_dict[self.noun]:
+            #     for sensory_content in self.question_info_manager.sensory_dict[self.sensory]:
+            #         question = question_prefix + noun_content + question_connection + sensory_content + question_suffix
+            #         question_list.append(question)    
+            # return question_list
+            return []
         elif self.question_type == "create":
             question_list = [] 
             noun_dict = self.question_info_manager.noun_dict
@@ -107,7 +131,7 @@ class QuestionConfig:
             helpful_info = self.question_info_manager.helpful_info
             sensory_choices_str = ' '.join(str(sensory_content) for sensory_content in sensory_dict[self.sensory])
             for i, noun_content in enumerate(noun_dict[self.noun]):
-                question_suffix = "问题" + str(i) + ":给出【" + noun_content + "】对应的" + self.sensory
+                question_suffix = "\nQuestion " + str(i) + ":give " +  self.sensory +"of 【"+ noun_content + "】 " 
                 question = helpful_info['question'] + self.sensory + \
                             helpful_info['choices'][0] + self.sensory + \
                             helpful_info['choices'][1] + sensory_choices_str +\
@@ -116,12 +140,16 @@ class QuestionConfig:
                             helpful_info['format'][0] + self.sensory + \
                             helpful_info['format'][1] + self.sensory + \
                             helpful_info['format'][2] + question_suffix
-                # print(question)
                 question_list.append(question)
-            
             return question_list
+            # if self.lang == 'en':
+            #     return question_list
+            # else:
+            #     question_list_lang = []
+            #     for question in question_list:
+            #         translator = Translator(from_lang="en", to_lang=self.lang)
+            #         question_translation = translator.translate(question)
+            #         question_list_lang.append(question_translation)
+            #     return question_list_lang
 
-# print("begin")
-# a = QuestionConfig("create",QuestionInfoManager("."),"方向","颜色")
-# a.generate_question()
-# print("end")
+
