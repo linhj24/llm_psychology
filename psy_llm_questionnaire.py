@@ -53,7 +53,7 @@ if __name__ == "__main__":
     conversation_info = {}
     conversation_info['questionnaire'] = questionnaire
     conversation_info['content'] = {}
-    # question_list = QuestionConfig(args.question_type,QuestionInfoManager("./data"),args.noun,args.sensory) .generate_question()
+    
     
     for turn_id in range(args.turn_num):
         print(f"======{turn_id}======")
